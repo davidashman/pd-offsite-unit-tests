@@ -1,32 +1,59 @@
 package blackboard.example.testing;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import blackboard.data.user.User;
+import blackboard.persist.Id;
+import blackboard.persist.PersistenceException;
+import blackboard.persist.user.UserDbLoader;
+import blackboard.platform.spring.beans.annotations.ContextValue;
+
+@Controller
 public class FooController
 {
 
-  /**
-   * Calculates the tip for a bill based on a service quality.
-   * 
-   * @param totalBill Total bill, in dollars.
-   * @param serviceQuality Quality of service on a scale from 0.0 -> 1.0.
-   * @return The tip to add to the bill
-   */
-  public double calculateTip( double totalBill, double serviceQuality )
+  @Autowired
+  private BarManager _barManager;
+  
+  @Autowired
+  private Foo _foo;
+  
+  @Autowired
+  private UserDbLoader _userLoader;
+  
+  public FooController()
   {
-    checkArgument( serviceQuality >= 0.0 && serviceQuality <= 1.0, "Service quality must be between 0.0 and 1.0." );
-    return totalBill * ( 0.20 * serviceQuality );
+  }
+
+  public FooController( BarManager manager, Foo foo, UserDbLoader userLoader )
+  {
+    _barManager = manager;
+    _foo = foo;
+    _userLoader = userLoader;
   }
   
-  public double calculateTip( double totalBill, Bar bar )
+  @RequestMapping( value = "/pay", method = RequestMethod.POST )
+  public void handlePayBill( HttpServletRequest request, @ContextValue( "user" ) User user )
   {
-    return calculateTip( totalBill, ( bar.isDive() ? 0.3 : 1.0 ) );
+    double bill = _barManager.getBill( user );
+    double tip = _foo.calculateTip( bill, _barManager.getBar() );
+    
+    _barManager.getBar().leaveTip( tip );
   }
-  
-  public void payBill( double totalBill, Bar bar )
+
+  @RequestMapping( value = "/pay", method = RequestMethod.GET )
+  public @ResponseBody double handleGetBill( @RequestParam( "user_id" ) long userId ) throws PersistenceException
   {
-    double tip = calculateTip( totalBill, bar );
-    bar.leaveTip( tip );
+    Id id = Id.generateId( User.DATA_TYPE, userId );
+    User user = _userLoader.loadById( id );
+    return _barManager.getBill( user );
   }
   
 }

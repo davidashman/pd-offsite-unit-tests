@@ -1,101 +1,89 @@
 package blackboard.example.testing;
 
+import javax.servlet.http.HttpServletRequest;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+import blackboard.data.user.User;
+import blackboard.persist.Id;
+import blackboard.persist.user.UserDbLoader;
+
+@RunWith( PowerMockRunner.class )
+@PrepareForTest( Id.class )
 public class FooControllerTest
 {
 
-  // Examples of simple assertions
-  
   @Test
-  public void testCalculateTipWithValidArguments()
+  public void testPayBill()
   {
-    FooController ctr = new FooController();
-    double tip = ctr.calculateTip( 10.0, 1.0 );
-    Assert.assertEquals( 2.0, tip );
+    BarManager mockBarManager = Mockito.mock( BarManager.class );
+    Foo mockFoo = Mockito.mock( Foo.class );
+    UserDbLoader mockLoader = Mockito.mock( UserDbLoader.class );
+    
+    //
+    // TESTABLE CODE WITH MOCKS
+    //
+    FooController ctr = new FooController( mockBarManager, mockFoo, mockLoader );
+    
+    HttpServletRequest mockRequest = Mockito.mock( HttpServletRequest.class );
+    User mockUser = Mockito.mock( User.class );
+    
+    //
+    // MOCKING COLLABORATORS
+    //
+    Bar mockBar = Mockito.mock( Bar.class );
+    Mockito.when( mockBarManager.getBar() ).thenReturn( mockBar );
+    Mockito.when( mockFoo.calculateTip( Mockito.anyDouble(), Mockito.eq( mockBar ) ) ).thenReturn( 100.0 );
+    
+    ctr.handlePayBill( mockRequest, mockUser );
+    
+    //
+    // VERIFYING COLLABORATIONS
+    //
+    Mockito.verify( mockBarManager ).getBill( mockUser );
+    Mockito.verify( mockBar ).leaveTip( 100.0 );
   }
 
   @Test
-  public void testCalculateTipeInvalidQualityThrowsException()
+  public void testGetBill() throws Exception
   {
-    FooController ctr = new FooController();
+    BarManager mockBarManager = Mockito.mock( BarManager.class );
+    Foo mockFoo = Mockito.mock( Foo.class );
+    UserDbLoader mockLoader = Mockito.mock( UserDbLoader.class );
     
-    try
-    {
-      ctr.calculateTip( 10.0, -0.3 );
-      Assert.fail( "Should throw IllegalArgumentException." );
-    }
-    catch ( IllegalArgumentException err )
-    {
-    }
-  }
-  
-  // Examples of mocked assertions
-  
-  @Test
-  public void testCalculateTipForDiveBar()
-  {
-    Bar bar = Mockito.mock( Bar.class );
-    Mockito.when( bar.isDive() ).thenReturn( true );
+    FooController ctr = new FooController( mockBarManager, mockFoo, mockLoader );
     
-    FooController ctr = new FooController();
-    double tip = ctr.calculateTip( 10.0, bar );
-    Assert.assertEquals( 0.6, tip );
-  }
-  
-  @Test
-  public void testCalculateTipForSwankyBar()
-  {
-    Bar bar = Mockito.mock( Bar.class );
-    Mockito.when( bar.isDive() ).thenReturn( false );
+    User mockUser = Mockito.mock( User.class );
+    Id mockId = Mockito.mock( Id.class );
     
-    FooController ctr = new FooController();
-    double tip = ctr.calculateTip( 10.0, bar );
-    Assert.assertEquals( 2.0, tip );
-  }
+    Mockito.when( mockLoader.loadById( mockId ) ).thenReturn( mockUser );
+    Mockito.when( mockBarManager.getBill( mockUser ) ).thenReturn( 10.0 );
+    
+    long userId = 40L;
+    
+    // 
+    // STATIC MOCKING
+    //
+    PowerMockito.mockStatic( Id.class );
+    
+    //
+    // ARGUMENT MATCHERS
+    //
+    PowerMockito.when( Id.class, "generateId", User.DATA_TYPE, userId ).thenReturn( mockId );
+    //PowerMockito.when( Id.class, "generateId", User.DATA_TYPE, Mockito.anyLong() ).thenReturn( mockId );
+    //PowerMockito.when( Id.class, "generateId", Mockito.eq( User.DATA_TYPE ), Mockito.anyLong() ).thenReturn( mockId );
+    
+    double bill = ctr.handleGetBill( userId );
 
-  // Examples of verification
-  
-  @Test
-  public void testLeavingTipForSwankyBar()
-  {
-    Bar bar = Mockito.mock( Bar.class );
-    Mockito.when( bar.isDive() ).thenReturn( false );
-
-    //Bar bar = new Bar(); 
-    //bar.setDive( false );
-    
-    FooController ctr = new FooController();
-    ctr.payBill( 10.0, bar );
-    
-    Mockito.verify( bar ).leaveTip( 2.0 );
-  }
-  
-  // Examples of "spying"
-
-  @Test
-  public void testSpyingCalculateTipForSwankyBar()
-  {
-    Bar bar = Mockito.mock( Bar.class );
-    Mockito.when( bar.isDive() ).thenReturn( false );
-    
-    FooController ctr = Mockito.spy( new FooController() );
-    ctr.calculateTip( 10.0, bar );
-    Mockito.verify( ctr ).calculateTip( 10.0, 1.0 );
-  }
-  
-  @Test
-  public void testSpyingCalculateTipForDiveBar()
-  {
-    Bar bar = Mockito.mock( Bar.class );
-    Mockito.when( bar.isDive() ).thenReturn( true );
-    
-    FooController ctr = Mockito.spy( new FooController() );
-    ctr.calculateTip( 10.0, bar );
-    Mockito.verify( ctr ).calculateTip( 10.0, 0.3 );
+    Mockito.verify( mockBarManager ).getBill( mockUser );
+    Assert.assertEquals( 10.0, bill );
   }
   
 }

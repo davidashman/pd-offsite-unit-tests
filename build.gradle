@@ -9,6 +9,7 @@ version "1.0-SNAPSHOT"
 
 ext {
   learnVersion = "9.1.120113.0"
+  springVersion = "3.2.2.RELEASE"
 }
 
 repositories {
@@ -52,7 +53,9 @@ dependencies {
   // apiCompile( "blackboard.platform:bb-cms-admin:$ext.learnVersion" ) { transitive = false }
 
   // Building a Spring B2?  Use our Spring APIs!
-  // compile( "blackboard.platform:bb-spring-webapi:$ext.learnVersion" ) { transitive = false }
+  compile "blackboard.platform:bb-spring-webapi:10.1"
+  compile "org.springframework:spring-beans:$ext.springVersion",
+          "org.springframework:spring-webmvc:$ext.springVersion"
 
   buildUtils "org.oscelot:b2deploy-task:0.1.0"
 }
