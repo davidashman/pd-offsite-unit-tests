@@ -38,9 +38,14 @@ dependencies {
   providedCompile "javax.servlet:servlet-api:2.5",
                   "javax.servlet.jsp:jsp-api:2.1"
 
+  compile "com.google.guava:guava:14.0.1"
+
+  testCompile "org.powermock:powermock-api-mockito:1.5"
+  testCompile "org.powermock:powermock-module-junit4:1.5"
+
   // Dependencies are libraries needed to build, but should not be included in the B2 WAR.
   // You should NEVER include Learn JARs (other than webapis) in your B2.
-  // providedCompile( "blackboard.platform:bb-platform:$ext.learnVersion" ) { transitive = false }
+  providedCompile( "blackboard.platform:bb-platform:$ext.learnVersion" ) { transitive = false }
   // providedCompile( "blackboard.platform:bb-taglibs:$ext.learnVersion" ) { transitive = false }
 
   // Dependencies that are just usd for the API jar compilation
@@ -48,9 +53,6 @@ dependencies {
 
   // Building a Spring B2?  Use our Spring APIs!
   // compile( "blackboard.platform:bb-spring-webapi:$ext.learnVersion" ) { transitive = false }
-
-  // Dependencies that are only necessary at runtime so should be included in the WAR
-  // runtime "org.javassist:javassist:3.17.1-GA"
 
   buildUtils "org.oscelot:b2deploy-task:0.1.0"
 }
