@@ -52,13 +52,23 @@ public class FooTest
   public void testCalculateTipForDiveBar()
   {
     //
-    // INTRODUCING COLLABORATORS
+    // ARRANGE (GIVEN)
     //
+    Foo ctr = new Foo();
     Bar bar = Mockito.mock( Bar.class );
     Mockito.when( bar.isDive() ).thenReturn( true );
     
-    Foo ctr = new Foo();
+    // Alternative syntax more aligned with Behavior Driven Develepment (BDD)
+    //BDDMockito.given( bar.isDive() ).willReturn( true );
+    
+    //
+    // ACT (WHEN)
+    //
     double tip = ctr.calculateTip( 10.0, bar );
+    
+    //
+    // ASSERT (THEN)
+    //
     Assert.assertEquals( 0.6, tip );
   }
   

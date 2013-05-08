@@ -14,7 +14,8 @@ public class Foo
    */
   public double calculateTip( double totalBill, double serviceQuality )
   {
-    checkArgument( serviceQuality >= 0.0 && serviceQuality <= 1.0, "Service quality must be between 0.0 and 1.0." );
+    checkArgument( serviceQuality >= 0.0 && serviceQuality <= 1.0, 
+        "Service quality must be between 0.0 and 1.0." );
     return totalBill * ( 0.20 * serviceQuality );
   }
   
